@@ -5,6 +5,8 @@ import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import SignIn from "./components/SignIn";
 import Account from "./components/Account"
+import UserDetails from "./components/UserDetails"
+// import { useWindowDimensions } from 'react-native';
 
 const Stack = createNativeStackNavigator();
 
@@ -18,6 +20,7 @@ const App = () => {
           options={{title: 'Welcome'}}
         />
         <Stack.Screen name="Account" component={Account} />
+        <Stack.Screen name="UserDetails" component={UserDetails}/>
       </Stack.Navigator>
     </NavigationContainer>
   );

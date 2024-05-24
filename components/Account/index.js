@@ -1,220 +1,192 @@
-import {View,Text,StyleSheet,TouchableOpacity,Alert} from "react-native"
+import {View,Text,StyleSheet,TouchableOpacity,Alert,ScrollView,SafeAreaView,useWindowDimensions} from "react-native"
 import { TextInput } from "react-native-paper"
-// import MaterialIcons from '@react-native-vector-icons/material-icons';
-import { useState,useEffect,useRef } from "react"
+import {Entypo} from 'react-native-vector-icons';
+import {useForm,Controller} from "react-hook-form"
+import { useState } from "react";
+import SideImage from "../SideImage";
 
-const Account=({navigation})=>{
-const [firstName,setFirstName]=useState("")
-const [lastName,setLastName]=useState("")
-const[firstNameErrMsg,setFirstNameErrMsg]=useState(false)
-const[lastNameErrMsg,setLastNameErrMsg]=useState(false)
 
-const [accountEmail,setAccountEmail]=useState("")
-const [accountEmailErrMsg,setAccountEmailErrMsg]=useState(false)
 
-const [accountPassword,setAccountPassword]=useState("")
-const [accountPasswordErrMsg,setAccountPasswordErrMsg]=useState(false)
+const Account=({navigation},props)=>{
+    console.log(props)
+    const {width,height}=useWindowDimensions()
+    const isLg = width >=height;
+    const {handleSubmit,control}=useForm()
 
-const [showPassword,setShowPassword]=useState(false)
-const [usersList,setUsersList]=useState([])
-
-const initialFirstName=useRef(false)
-const initialLastName=useRef(false)
-const initialEmail=useRef(false)
-const initialPassword=useRef(false)
-
-useEffect(()=>{
-    if(initialFirstName.current){
-        inputFieldsFocused("firstName")
+    const [showPassword,setShowPassword]=useState(false)
+    const showAndHiddePassword=()=>{
+        setShowPassword((prev)=>!prev)
     }
-    initialFirstName.current=true
-  },[firstName])
 
-  useEffect(()=>{
-   if(initialLastName.current){
-    inputFieldsFocused("lastName")
-   }
-    
-   initialLastName.current=true
-  },[lastName])
-
-  useEffect(()=>{
-   if(initialEmail.current){
-    inputFieldsFocused("email")
-   }
-    
-   initialEmail.current=true
-  },[accountEmail])
-
-  useEffect(()=>{
-   if(initialPassword.current){
-    inputFieldsFocused("password")
-   }
-    
-   initialPassword.current=true
-  },[accountPassword])
-
-
-
-const backToSign=()=>{
-    navigation.navigate("SignIn")
-}
-
-const inputFieldsFocused=(state)=>{
-    if(state==="firstName"){
-        if(firstName===""){
-            setFirstNameErrMsg(true)
-        }else{
-            setFirstNameErrMsg(false)
-        }
-    }else if(state==="lastName"){
-        if(lastName===""){
-            setLastNameErrMsg(true)
-        }else{
-            setLastNameErrMsg(false)
-        }
-    }else if(state==="email"){
-        if(accountEmail===""){
-            setAccountEmailErrMsg(true)
-        }else{
-            setAccountEmailErrMsg(false)
-        }
-    }else if(state==="password"){
-        if(accountPassword===""){
-            setAccountPasswordErrMsg(true)
-        }else{
-            setAccountPasswordErrMsg(false)
-        }
-        
+    const backToSign=()=>{
+        navigation.navigate("SignIn")
     }
-    
-}
 
-const firstNameFieldFocused=()=>{
-    inputFieldsFocused("firstName")
-}
+    const createNewUser=()=>{
+            console.log("newuser")
+           
 
-const lastNameFieldFocused=()=>{
-    inputFieldsFocused("lastName")
-}
-
-const emailFieldFocused=()=>{
-    inputFieldsFocused("email")
-}
-
-const passwordFieldFocused=()=>{
-    inputFieldsFocused("password")
-}
-
-const firstNameFun=(firstName)=>{
-    setFirstName(firstName)
-    
-}
-
-const lastNameFun=(lastName)=>{
-    setLastName(lastName)
-}
-
-const emailEnterFun=(emailText)=>{
-    setAccountEmail(emailText)
-}
-
-const passwordEnterFun=(passwordText)=>{
-    setAccountPassword(passwordText)
-}
-
-const showAndHiddePassword=()=>{
-    setShowPassword((prev)=>!prev)
-}
-
-
-const createNewUser=()=>{
-    console.log("newuser")
-    if(firstName !=="" && lastName!=="" && accountEmail!=="" && accountPassword!==""){
-        const newUser={
-            firstName,
-            lastName,
-            email:accountEmail,
-            password:accountPassword
+            // if(firstName !=="" && lastName!=="" && accountEmail!=="" && accountPassword!==""){
+            //     const newUser={
+            //         firstName,
+            //         lastName,
+            //         email:accountEmail,
+            //         password:accountPassword
+            //     }
+            //     setUsersList([...usersList,newUser])
+            //     console.log(usersList)
+            //     Alert.alert("You Have Account now","Please Sign In",[
+            //         {
+            //             title:"Ok",
+            //             onPress:()=>{
+            //                 backToSign()
+            //             }
+            //         }
+            //     ])
+            // }else{
+            //     Alert.alert("Enter Required Details","Please Fill All Input Fields",[
+            //         {
+            //             title:"Ok",
+                        
+            //         }
+            //     ])
+            // }
         }
-        setUsersList([...usersList,newUser])
-        console.log(usersList)
-        Alert.alert("You Have Account now","Please Sign In",[
-            {
-                title:"Ok",
-                onPress:()=>{
-                    backToSign()
-                }
-            }
-        ])
-    }else{
-        Alert.alert("Enter Required Details","Please Fill All Input Fields",[
-            {
-                title:"Ok",
-                
-            }
-        ])
-    }
-}
 
-return (
-    <View style={Styles.accountMainContainer}>
-        <View style={Styles.accountInnerContainer}>
-            <Text style={Styles.accountHeading}>Get Started absolutely free</Text>
-            <Text style={[Styles.accountcommonProp,Styles.alreadyAccount]}>Already have an account? <Text style={[Styles.accountcommonProp,Styles.signin]} onPress={backToSign}>Sign in</Text></Text>
-            <View style={Styles.formContainer}>
 
-                <View style={Styles.namesContainer}>
-                    <View style={Styles.firstNameContainer}>
-                        <TextInput onFocus={firstNameFieldFocused} value={firstName} onChangeText={firstNameFun} style={[Styles.nameInput,Styles.accountCommonInput]} placeholder="First name"/>
-                        {firstNameErrMsg&&<Text style={Styles.errMsg}>*Required</Text>}
+    return(
+        <SafeAreaView>
+            <View>
+            <ScrollView nestedScrollEnabled scrollEnabled bounces={false}>
+                <View style={[Styles.innerContainer,{flexDirection:isLg?"row":"column",height:height}]}>
+                    <View style={[Styles.imageContainer,{display:isLg?"flex":"none"}]}>
+                        <SideImage/>
                     </View>
-                    <View style={Styles.firstNameContainer}>
-                        <TextInput onFocus={lastNameFieldFocused} value={lastName} onChangeText={lastNameFun}  style={[Styles.nameInput,Styles.accountCommonInput]} placeholder="Last name"/>
-                        {lastNameErrMsg&&<Text style={Styles.errMsg}>*Required</Text>}
-                    </View>   
-                </View>
+                    <View style={[Styles.accountFormContainer,{width:isLg?"48%":"95%"}]}>
+                        <Text style={Styles.accountHeading}>Get Started absolutely free</Text>
+                        <Text style={[Styles.accountcommonProp,Styles.alreadyAccount]}>Already have an account? <Text style={[Styles.accountcommonProp,Styles.signin]} onPress={backToSign}>Sign in</Text></Text>
+                        <View style={Styles.formContainer}>
+                            <View style={Styles.namesContainer}>
+                                <View style={Styles.firstNameContainer}>
+                                    <Controller
+                                        control={control}
+                                        name={"firstName"}
+                                        rules={{required:"* First name required"}}
+                                        render={({field:{value,onChange},fieldState:{error}})=>
+                                            (<>
+                                                <TextInput
+                                                    placeholder="First Name"
+                                                    value={value}
+                                                    
+                                                    onChangeText={onChange}
+                                                    style={[Styles.nameInput,Styles.accountCommonInput]}
+                                                />
+                                                {error && <Text style={Styles.errMsg}>{error.message}</Text>}
+                                            </>
+                                        )
+                                        }
+                                    />
+                                </View>
+                                <View style={Styles.firstNameContainer}>
+                                    <Controller
+                                        control={control}
+                                        name={"lastName"}
+                                        rules={{required:"* Last name required"}}
+                                        render={({field:{value,onChange},fieldState:{error}})=>
+                                            (<>
+                                                <TextInput
+                                                    placeholder="Last Name"
+                                                    value={value}
+                                                    onChangeText={onChange}
+                                                    style={[Styles.nameInput,Styles.accountCommonInput]}
+                                                />
+                                                {error && <Text style={Styles.errMsg}>{error.message}</Text>}
+                                            </>
+                                        )
+                                        }
+                                    />
+                                </View>
+                            </View>
+                            <View >
+                                {/* It is a account email field */}
+                                <Controller
+                                    name={"accountEmail"}
+                                    control={control}
+                                    rules={{required:"* Email required"}}
+                                    render={({field:{value,onChange},fieldState:{error}})=>
+                                        <View >
+                                            <TextInput
+                                                value={value} 
+                                                onChangeText={onChange} 
+                                                keyboardType="email-address"
+                                                style={[Styles.accountEmail,Styles.accountCommonInput]} 
+                                                placeholder="Email address"/>
+                                                {error && <Text style={Styles.errMsg}>{error.message}</Text>}
+                                        </View>
+                                    }
+                                />
 
-                <TextInput onFocus={emailFieldFocused} value={accountEmail} onChangeText={emailEnterFun} keyboardType="email-address" style={[Styles.accountEmail,Styles.accountCommonInput]} placeholder="Email address"/>
-                {accountEmailErrMsg&&<Text style={Styles.errMsg}>*Required</Text>}
-                <View style={Styles.passwordContainer}>
-                    <TextInput  onFocus={passwordFieldFocused} value={accountPassword} onChangeText={passwordEnterFun} style={Styles.passwordInput} placeholder="Password" secureTextEntry={!showPassword} />
-                    {/* <MaterialIcons name={showPassword?"eye":"eye-with-line"} size={20} color="#000" onPress={showAndHiddePassword}/> */}
+                            </View>
+                            <View style={Styles.passwordContainer}>
+                                {/* It is a account password field */}
+                                <Controller
+                                    name={"accountPassword"}
+                                    rules={{required:"* Password required"}}
+                                    control={control}
+                                    render={({field:{value,onChange},fieldState:{error}})=>
+                                        <View style={{display:"flex",flexDirection:"column"}}>
+                                            <View style={Styles.passwordAndEyeContainer}>
+                                                <TextInput
+                                                    value={value} 
+                                                    onChangeText={onChange} 
+                                                    style={Styles.passwordInput} 
+                                                    secureTextEntry={!showPassword}
+                                                    placeholder="Password"/>
+                                                    <Entypo name={showPassword?"eye":"eye-with-line"} size={30} color="#000" onPress={showAndHiddePassword}/>
+                                            </View>
+                                            {error && <Text style={Styles.errMsg}>{error.message}</Text>}
+                                        </View>
+                                        
+                                    }
+                                    
+                                />
+                                
+                                
+                            </View>
+                            <TouchableOpacity color="#ffffff" style={Styles.createAccountBtn} onPress={handleSubmit(createNewUser)}>
+                                    <Text style={Styles.createAccountBtnText} onPress={handleSubmit(createNewUser)}>Create Account</Text>
+                            </TouchableOpacity>
+                            
+                        </View>
+                    </View>
                 </View>
-                {accountPasswordErrMsg&&<Text style={Styles.errMsg}>*Required</Text>}
-                <TouchableOpacity color="#ffffff" style={Styles.createAccountBtn}>
-                    <Text style={Styles.createAccountBtnText} onPress={createNewUser}>Create Account</Text>
-                </TouchableOpacity>
-                <Text style={Styles.termsAndConditions}>
-                    By Signing up, I agree  to 
-                    <Text style={Styles.termsAndPrivacy}> Terms of Service </Text>
-                     and 
-                    <Text style={Styles.termsAndPrivacy}> Privacy Policy</Text></Text>
+            </ScrollView>
             </View>
-        </View>
-    </View>
-)
+        </SafeAreaView>
+
+    )
+
 
 }
 
 const Styles=StyleSheet.create({
-    accountMainContainer:{
-    // borderWidth:1,
-    // borderStyle:"solid",
-    // borderColor:"red",
-    width:"100%",
-    height:"95%" ,
-    display:"flex",
-    justifyContent:"center",
-    alignItems:"center" 
-
-    },
-    accountInnerContainer:{
-    // borderWidth:1,
-    // borderStyle:"dashed",
-    // borderColor:"red",
-    width:"95%",
-    height:"95%",
+   
+    
+    innerContainer:{
+        display:"flex",
+       justifyContent:"space-around",
+       alignItems:"center",
+    
+      },
+      imageContainer:{
+        borderWidth:1,
+        borderStyle:"solid",
+        borderColor:"blue",
+        width:"48%",
+        height:"48%"
+      },
+    accountFormContainer:{
+        height:"48%"
     },
     accountHeading:{
         color:"black",
@@ -226,7 +198,6 @@ const Styles=StyleSheet.create({
     accountcommonProp:{
         fontSize:15,
        fontWeight:"bold",
-       marginBottom:20,
      },
      signin:{
        color:"green",
@@ -235,16 +206,11 @@ const Styles=StyleSheet.create({
        color:"gray",
      },
      formContainer:{
-        // borderWidth:1,
-        // borderStyle:"dashed",
-        // borderColor:"blue",
         width:"100%",
-        height:"80%",
+        height:"70%",
         display:"flex",
         flexDirection:"column",
-        // justifyContent:"space-around",
         alignItems:"flex-start",
-        paddingTop:10,
        
      },
      namesContainer:{
@@ -252,21 +218,13 @@ const Styles=StyleSheet.create({
         flexDirection:"row",
         justifyContent:"space-between",
         alignItems:"center",
-        // borderWidth:1,
-        // borderStyle:"solid",
-        // borderColor:"green",
         width:"100%",
         height:80,
-        marginBottom:20
-        
-        
+        marginBottom:20, 
      },
      firstNameContainer:{
-        width:"48%",
-        // borderWidth:1,
-        // borderStyle:"solid",
-        // borderColor:"yellow",
-        
+        width:"48%", 
+        height:40,
      },
      accountCommonInput:{
         backgroundColor:"transparent",
@@ -280,25 +238,34 @@ const Styles=StyleSheet.create({
         width:"100%",
      },
      accountEmail:{
-        width:"100%",
+        minWidth:"100%",
      },
      passwordInput:{
-        width:"90%",
+        minWidth:"90%",
         backgroundColor:"transparent",
+       
        
      },
      passwordContainer:{
-        borderWidth:1,
-        borderStyle:"solid",
-        borderColor:"gray",
-        borderRadius:8,
         width:"100%",
         display:"flex",
         flexDirection:"row",
         justifyContent:"space-between",
         alignItems:"center",
-        marginTop:20
+        marginTop:20,
+        
      },
+     passwordAndEyeContainer:{
+        display:"flex",
+        flexDirection:"row",
+        justifyContent:"space-between",
+        alignItems:"center",
+        borderWidth:1,borderColor:"gray",borderStyle:"solid",
+        borderRadius:8,
+        paddingLeft:10,
+        paddingRight:10,
+        minWidth:"100%"
+    },
      createAccountBtn:{
         backgroundColor:'black',
         width:'100%',
@@ -313,22 +280,13 @@ const Styles=StyleSheet.create({
         fontFamily:"Roboto",
         fontSize:18
       },
-      termsAndConditions:{
-        fontSize:10,
-        fontFamily:"Roboto",
-        fontWeight:"bold",
-        marginTop:20
-      },
-      termsAndPrivacy:{
-        fontSize:11,
-        textDecorationLine:'underline'
-      },
       errMsg:{
         color:"red",
         fontSize:8,
         fontFamily:"Roboto",
         marginBottom:10
-      }
+      },
+      
 })
 
 export default Account;

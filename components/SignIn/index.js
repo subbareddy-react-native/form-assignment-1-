@@ -1,172 +1,139 @@
-import { Text,View, StyleSheet,TouchableOpacity,Alert} from 'react-native';
-// import {v4 as uuidv4} from "uuid"
-// import {useForm,Controller} from "react-native-hook"
-// import {NavigationContainer} from '@react-navigation/native';
-import {useState,useEffect,useRef} from "react";
-import {Checkbox,TextInput} from "react-native-paper"
+import { Text,View, StyleSheet,TouchableOpacity,Alert,useWindowDimensions,SafeAreaView,ScrollView,Platform} from 'react-native';
+import {useForm,Controller} from "react-hook-form"
+import {Entypo} from 'react-native-vector-icons';
+import {useState} from "react";
+import {TextInput} from "react-native-paper"
+import SideImage from "../SideImage"
 
-export default function SignIn({navigation}) {
-  const [checkbox,setCheckBox]=useState(false)
-  const [emailErrMsg,setEmailErrMsg]=useState(false)
-  const [passwordErrMsg,setPasswordErrMsg]=useState(false)
-  const [email,setEmail]=useState("")
-  const [password,setPassword]=useState("")
-  const emailIntialRender=useRef(false)
-  const passwordIntialRender=useRef(false)
+const SignIn=({navigation})=>{
+	const {width,height}=useWindowDimensions()
+    const isLg = width >= height;
+  const {handleSubmit,control}=useForm();
 
-  const [allUsersDetails,setAllUserDetails]=useState([{"email":"subbu@123","password":"subbu@123"}])
+  const [showPassword,setShowPassWord]=useState(false)
+  const [usersList,setUsersList]=useState([{"useremail":"subbareddy4327@gmail.com","userpassword":"subbu@1234"},{"useremail":"subba.reddy@smartfoodsafe.com","userpassword":"subbu@1234"}])
   
+  const showAndHidePassword=()=>{
+    setShowPassWord(!showPassword)
+  }
+
   const createAccount=()=>{
-    console.log("user is ready to create account")
     navigation.navigate("Account")
   }
 
-  const onSubmit=()=>{
-    if(email !=='' && password!==""){
-      const userInfo={
-        email,
-        password
-      }
-      const exitUser=allUsersDetails.find(each=>each["email"]===userInfo["email"])
-      if(exitUser===undefined){
-       Alert.alert("Please Create Account","After created please Sign in",[
-        {text:"Ok",
-         onPress:()=>{
-          console.log("Ok pressed")
-          createAccount()
-         }
-        },
-        {text:"Cancle",
-         onPress:()=>{
-          console.log("Cancle pressed")
-         }
-        }
-       ])
-       //navigate to the create account page
-       //after entered the details into create account page.Again show the alert message 
-       //then go to the sign in page
-      }
-      else{
-        console.log(exitUser)
-        if(exitUser["email"]===userInfo["email"] && exitUser["password"]===userInfo["password"]){
-          console.log("navigate to details page")
-         
-        }
-      }
-    }
-    
+  const goToUserDetails=()=>{
+    navigation.navigate("UserDetails")
   }
 
-
-  useEffect(()=>{
-    if(emailIntialRender.current){
-    errorMsgCheck("email")
+  const onSubmit=(data)=>{
+   const {useremail,userpassword}=data
+   if(useremail!=="" && userpassword!==""){
+    const user=usersList.find(each=>
+      (each["useremail"]===data["useremail"] && each["userpassword"]===data["userpassword"]) 
+    )
+    if(user===undefined){
+      Alert.alert("Create account","You don't have an account please create account",[
+        {
+          text:"CREATE",
+          onPress:()=>{
+            createAccount()
+          }
+        },
+        {
+          text:"CANCLE"
+        }
+        
+      ])
+    }else{
+      goToUserDetails()
     }
-    emailIntialRender.current=true
-  },[email])
-
-  useEffect(()=>{
-   if(passwordIntialRender.current){
-    errorMsgCheck("password")
    }
     
-   passwordIntialRender.current=true
-  },[password])
-
-  const errorMsgCheck=(state)=>{
-   
-    if(state==="email"){
-     
-      if(email===""){
-       
-        setEmailErrMsg(true)
-      }else{
-       
-        setEmailErrMsg(false)
-      }
-    }else if(state==="password"){
-      if(password===""){
-       
-        setPasswordErrMsg(true)
-      }else{
-       
-        setPasswordErrMsg(false)
-      }
-    }
-  }
- 
-  const changeEmail=(email)=>{
-    
-    setEmail(email)
-    
-   
   }
 
-  const changePassword=(password)=>{
-    setPassword(password)
-  }
+  return(
+    <SafeAreaView>
+		<View>
+			<ScrollView nestedScrollEnabled scrollEnabled bounces={false}>
+				<View style={[styles.innerContainer,{flexDirection:isLg?"row":"column",height:height}]}>
+					<View style={[styles.imageContainer,{display:isLg?"flex":"none"}]}>
+						<SideImage/>
+					</View>
+					<View style={{width:isLg?"48%":"95%"}}>
+						<Text style={styles.signHeading}>
+							Sign in
+						</Text>
+						<Text style={[styles.newUser,styles.commonProp]}>
+							New User? <Text style={[styles.createAccount,styles.commonProp]} onPress={createAccount} > Create an account</Text>
+						</Text>
+						<View style={{marginBottom:20}} >
+							<Controller
+							control={control}
+							name={"useremail"}
+							rules={{required:"user email is required"}}
+							render={({field:{value,onChange,onBlur},fieldState:{error}})=>(
+							<View>
+								<TextInput 
+								style={styles.input} 
+								placeholder="Enter your email" 
+								onBlur={onBlur}
+								onChangeText={onChange} 
+								value={value}
+								keyboardType="email-address" />
+								{error&&<Text style={styles.errMsg}>{error.message}</Text>}
+							</View>
+							)}/>
+						</View>
+						<View style={{marginBottom:20}}>
+							<Controller
+							control={control}
+							name={"userpassword"}
+							rules={{required:"user password is required"}}
+							render={({field:{value,onChange,onBlur},fieldState:{error}})=>(
+							<>
+							<View style={styles.passwordContainer}>
+								<TextInput  
+								value={value} 
+								onBlur={onBlur}
+								onChangeText={onChange}
+								placeholder="Password"
+								secureTextEntry={!showPassword}
+								style={[styles.input,styles.passwordEle]} 
+								/>
+								<Entypo name={showPassword?"eye":"eye-with-line"} size={25} color="#000" onPress={showAndHidePassword}/>
+								</View>
+								{error&&<Text style={styles.errMsg}>{error.message}</Text>}
+							</>
+							)}/>
+						</View>
+						<TouchableOpacity  style={styles.button}  
+							onPress={handleSubmit(onSubmit)}>
+							<Text style={styles.loginText}>Login</Text>
+						</TouchableOpacity>
+					</View>
+				</View>
+			</ScrollView>
+		</View>
+    </SafeAreaView>
+  )
 
-  const emailFieldCheck=()=>{
-    errorMsgCheck("email")
-  }
-
-  const passwordFieldCheck=()=>{
-    errorMsgCheck("password")
-  }
-
-  
-
- 
-  return (
-   
-    <View style={styles.mainContainer}>
-    <View style={styles.innerContainer}>
-        <Text style={styles.signHeading}>
-        Sign in
-        </Text>
-        <Text style={[styles.newUser,styles.commonProp]}>
-        New User? <Text style={[styles.createAccount,styles.commonProp]} onPress={createAccount} > Create an account</Text>
-        </Text>
-        <TextInput style={styles.input} placeholder="Enter your email" onFocus={emailFieldCheck} onChangeText={changeEmail} value={email} keyboardType="email-address" />
-        {emailErrMsg&&<Text style={styles.errMsg}>*Required</Text>}
-        <TextInput style={styles.input} placeholder="Enter your password" onChangeText={changePassword} value={password} secureTextEntry= {!checkbox} onFocus={passwordFieldCheck}/>
-        {passwordErrMsg&&<Text style={styles.errMsg}>*Required</Text>}
-        <View style={styles.showPasswordContainer}>
-        <Checkbox 
-        disabled={password.length>0?false:true}
-        value={checkbox}
-        status={checkbox ? "checked":"unchecked"}  onPress={()=>{
-        setCheckBox(!checkbox)
-        }}/>
-        <Text style={styles.showPasswordText}>Show password</Text>
-        </View>
-        <Text style={{marginBottom:15,textDecorationLine:"underline",textDecorationColor:"blue",marginLeft:"auto"}}>Forget password?</Text>
-        <TouchableOpacity  style={[styles.button,(email.length!==0 && password.length!==0)?styles.enabledBtn:styles.disabledBtn]}  
-        onPress={onSubmit}>
-        <Text style={styles.loginText}>Login</Text>
-        </TouchableOpacity>
-        
-    </View>
-    </View>
-     
-  );
 }
+export default SignIn
+
+
 
 const styles = StyleSheet.create({
-  mainContainer:{
-    height:"80%",
-    width:"100%",
-    display:"flex",
-    flexDirection:"column",
-    alignItems:"center",
-    justifyContent:"center"
-  },
+ 
   innerContainer:{
-    height:"70%",
-    width:"95%",
-    display:"flex",
-    flexDirection:"column", 
+	display:"flex",
+   justifyContent:"space-around",
+   alignItems:"center",
   },
+  imageContainer:{
+	width:"48%",
+	height:"48%"
+  },
+ 
   signHeading:{
     color:"black",
     fontSize:30,
@@ -188,7 +155,6 @@ const styles = StyleSheet.create({
   backgroundColor:"transparent",
   borderRadius:7,
   height: 50,
-  marginTop: 20,
   marginLeft:0,
   borderWidth: 1,
 },
@@ -196,21 +162,23 @@ errMsg:{
   color:"red",
   fontSize:8,
   fontFamily:"Roboto",
-  marginBottom:10
+ 
 },
-showPasswordContainer:{
-  width:"60%",
-  display:"flex",
-  flexDirection:"row",
-  justifyContent:"space-between",
-  alignItems:"center",
-  marginBottom:20,
-  padding:0,
+passwordContainer:{
+display:"flex",
+flexDirection:"row",
+justifyContent:"space-between",
+alignItems:"center",
+borderWidth:1,
+borderColor:"gray",
+borderStyle:"solid",
+borderRadius:8,
+paddingLeft:10,
+paddingRight:10
 },
-
-showPasswordText:{
-  fontSize:18,
-  fontWeight:"bold"
+passwordEle:{
+  width:"93%",
+  borderWidth:0
 },
 button:{
   backgroundColor:'black',
@@ -218,12 +186,6 @@ button:{
   borderRadius:5,
   padding:10,
   
-},
-enabledBtn:{
-  opacity:1,
-},
-disabledBtn:{
-opacity:0.4
 },
 loginText:{
   color:"white",
