@@ -2,18 +2,21 @@ import {View,Text,StyleSheet,TouchableOpacity,Alert,ScrollView,SafeAreaView,useW
 import { TextInput } from "react-native-paper"
 import {Entypo} from 'react-native-vector-icons';
 import {useForm,Controller} from "react-hook-form"
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useState } from "react";
 import SideImage from "../SideImage";
 
 
 
-const Account=({navigation},props)=>{
-    console.log(props)
+const Account=({navigation})=>{
     const {width,height}=useWindowDimensions()
-    const isLg = width >=height;
+    const isLg = width >=800;
     const {handleSubmit,control}=useForm()
 
+    const [newAccount,setNewAccount]=useState({})
+
     const [showPassword,setShowPassword]=useState(false)
+
     const showAndHiddePassword=()=>{
         setShowPassword((prev)=>!prev)
     }
@@ -22,36 +25,62 @@ const Account=({navigation},props)=>{
         navigation.navigate("SignIn")
     }
 
-    const createNewUser=()=>{
-            console.log("newuser")
-           
+    const setUserIntoStorage=async(newUser)=>{
+        const usersList= await AsyncStorage.getItem("usersList");
+        if(usersList===null){
+            const list=[{...newUser,id:1}]
+            await AsyncStorage.setItem("usersList",JSON.stringify(list))
+            
+        }else{
+        
+            const finalList=JSON.parse(usersList);
+            await AsyncStorage.setItem("usersList",JSON.stringify([...finalList,{...newUser,id:finalList.length+1}]))
 
-            // if(firstName !=="" && lastName!=="" && accountEmail!=="" && accountPassword!==""){
-            //     const newUser={
-            //         firstName,
-            //         lastName,
-            //         email:accountEmail,
-            //         password:accountPassword
-            //     }
-            //     setUsersList([...usersList,newUser])
-            //     console.log(usersList)
-            //     Alert.alert("You Have Account now","Please Sign In",[
-            //         {
-            //             title:"Ok",
-            //             onPress:()=>{
-            //                 backToSign()
-            //             }
-            //         }
-            //     ])
-            // }else{
-            //     Alert.alert("Enter Required Details","Please Fill All Input Fields",[
-            //         {
-            //             title:"Ok",
-                        
-            //         }
-            //     ])
-            // }
         }
+
+    }
+
+    const createNewUser=async()=>{
+        if(((newAccount.firstName!==undefined)&& (newAccount.lastName!==undefined)&& (newAccount.useremail!==undefined) && (newAccount.userpassword!==undefined))){
+            const newUser={
+                firstName:newAccount.firstName,
+                lastName:newAccount.lastName,
+                useremail:newAccount.useremail,
+                userpassword:newAccount.userpassword
+            }
+            const usersList= await AsyncStorage.getItem("usersList");
+            const userexit=(usersList!==null) && JSON.parse(usersList).some(each=>each.useremail===newUser.useremail)
+           if(userexit===true){
+                Alert.alert("Already userexist","With is email already userexist.Please try againg with another email address",[
+                    {
+                        text:"Ok"
+                    }
+                ])
+            }
+            else{
+                await setUserIntoStorage(newUser)
+                Alert.alert("You Have Account now","Please Sign In",[
+                    {
+                        text:"Ok",
+                        onPress:()=>{
+                            backToSign()
+                        }
+                    },
+                    {
+                       text:"CANCEL"
+                    }
+                ])
+
+            }
+        }else{
+            Alert.alert("Enter Required Details","Please Fill All Input Fields",[
+                {
+                    title:"Ok",
+                    
+                }
+            ])
+        }
+    }
 
 
     return(
@@ -71,17 +100,15 @@ const Account=({navigation},props)=>{
                                     <Controller
                                         control={control}
                                         name={"firstName"}
-                                        rules={{required:"* First name required"}}
-                                        render={({field:{value,onChange},fieldState:{error}})=>
+                                        render={()=>
                                             (<>
                                                 <TextInput
                                                     placeholder="First Name"
-                                                    value={value}
-                                                    
-                                                    onChangeText={onChange}
+                                                    value={newAccount.firstName!==undefined ? newAccount.firstName:""}
+                                                    onChangeText={(firstName)=>setNewAccount({...newAccount,firstName:firstName})}
                                                     style={[Styles.nameInput,Styles.accountCommonInput]}
                                                 />
-                                                {error && <Text style={Styles.errMsg}>{error.message}</Text>}
+                                                {newAccount.firstName==="" && <Text style={Styles.errMsg}>{"* First name required"}</Text>}
                                             </>
                                         )
                                         }
@@ -91,16 +118,16 @@ const Account=({navigation},props)=>{
                                     <Controller
                                         control={control}
                                         name={"lastName"}
-                                        rules={{required:"* Last name required"}}
-                                        render={({field:{value,onChange},fieldState:{error}})=>
+                                        // rules={{required:"* Last name required"}}
+                                        render={()=>
                                             (<>
                                                 <TextInput
                                                     placeholder="Last Name"
-                                                    value={value}
-                                                    onChangeText={onChange}
+                                                    value={newAccount.lastName!==undefined ? newAccount.lastName:""}
+                                                    onChangeText={(lastName)=>setNewAccount({...newAccount,lastName:lastName})}
                                                     style={[Styles.nameInput,Styles.accountCommonInput]}
                                                 />
-                                                {error && <Text style={Styles.errMsg}>{error.message}</Text>}
+                                                {newAccount.lastName==="" && <Text style={Styles.errMsg}>{"* Last name required"}</Text>}
                                             </>
                                         )
                                         }
@@ -112,16 +139,16 @@ const Account=({navigation},props)=>{
                                 <Controller
                                     name={"accountEmail"}
                                     control={control}
-                                    rules={{required:"* Email required"}}
-                                    render={({field:{value,onChange},fieldState:{error}})=>
+                                    // rules={{required:"* Email required"}}
+                                    render={()=>
                                         <View >
                                             <TextInput
-                                                value={value} 
-                                                onChangeText={onChange} 
+                                                value={newAccount.useremail!==undefined ? newAccount.useremail:""}
+                                                onChangeText={(email)=>setNewAccount({...newAccount,useremail:email})} 
                                                 keyboardType="email-address"
                                                 style={[Styles.accountEmail,Styles.accountCommonInput]} 
                                                 placeholder="Email address"/>
-                                                {error && <Text style={Styles.errMsg}>{error.message}</Text>}
+                                                {newAccount.useremail==="" && <Text style={Styles.errMsg}>{"* Email required"}</Text>}
                                         </View>
                                     }
                                 />
@@ -131,20 +158,19 @@ const Account=({navigation},props)=>{
                                 {/* It is a account password field */}
                                 <Controller
                                     name={"accountPassword"}
-                                    rules={{required:"* Password required"}}
                                     control={control}
-                                    render={({field:{value,onChange},fieldState:{error}})=>
+                                    render={()=>
                                         <View style={{display:"flex",flexDirection:"column"}}>
                                             <View style={Styles.passwordAndEyeContainer}>
                                                 <TextInput
-                                                    value={value} 
-                                                    onChangeText={onChange} 
+                                                    value={newAccount.userpassword!==undefined ? newAccount.userpassword:""} 
+                                                    onChangeText={(password)=>setNewAccount({...newAccount,userpassword:password})} 
                                                     style={Styles.passwordInput} 
                                                     secureTextEntry={!showPassword}
                                                     placeholder="Password"/>
                                                     <Entypo name={showPassword?"eye":"eye-with-line"} size={30} color="#000" onPress={showAndHiddePassword}/>
                                             </View>
-                                            {error && <Text style={Styles.errMsg}>{error.message}</Text>}
+                                            {newAccount.userpassword==="" && <Text style={Styles.errMsg}>{"* Password required"}</Text>}
                                         </View>
                                         
                                     }

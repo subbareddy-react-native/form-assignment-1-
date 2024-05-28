@@ -1,18 +1,42 @@
-import { Text,View, StyleSheet,TouchableOpacity,Alert,useWindowDimensions,SafeAreaView,ScrollView,Platform} from 'react-native';
+import { Text,View, StyleSheet,TouchableOpacity,Alert,useWindowDimensions,SafeAreaView,ScrollView} from 'react-native';
 import {useForm,Controller} from "react-hook-form"
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import {Entypo} from 'react-native-vector-icons';
 import {useState} from "react";
 import {TextInput} from "react-native-paper"
 import SideImage from "../SideImage"
+// import {useMediaQuery} from "../Hooks/useMediaQuery"
 
 const SignIn=({navigation})=>{
 	const {width,height}=useWindowDimensions()
-    const isLg = width >= height;
+    const isLg = width >=800 ;
   const {handleSubmit,control}=useForm();
 
+  const fetchDataFromStorage=async()=>{
+    try{
+    const usersList=await AsyncStorage.getItem("usersList")
+    if(usersList===null){
+      return []
+    }else{
+      return usersList
+    }
+  }catch(error){
+    console.log("error happend while fetch from async storage",error.message)
+  }
+  }
+
   const [showPassword,setShowPassWord]=useState(false)
-  const [usersList,setUsersList]=useState([{"useremail":"subbareddy4327@gmail.com","userpassword":"subbu@1234"},{"useremail":"subba.reddy@smartfoodsafe.com","userpassword":"subbu@1234"}])
+  let usersList;
+  fetchDataFromStorage()
+      .then((response)=>{
+        return response
+      })
+      .then((data)=>{
+        usersList=data
+      })
+      .catch(error=>console.log(`error happend while fetch the data from async storage :${error.message}`))
   
+
   const showAndHidePassword=()=>{
     setShowPassWord(!showPassword)
   }
@@ -28,22 +52,37 @@ const SignIn=({navigation})=>{
   const onSubmit=(data)=>{
    const {useremail,userpassword}=data
    if(useremail!=="" && userpassword!==""){
-    const user=usersList.find(each=>
-      (each["useremail"]===data["useremail"] && each["userpassword"]===data["userpassword"]) 
-    )
+    const user=JSON.parse(usersList).find(each=>
+      each['useremail']===data['useremail'] && each['userpassword']==data['userpassword'])
     if(user===undefined){
-      Alert.alert("Create account","You don't have an account please create account",[
-        {
-          text:"CREATE",
-          onPress:()=>{
-            createAccount()
+      const wrongPassword=JSON.parse(usersList).some(each=>
+        each['useremail']===data['useremail'] && each['userpassword']!==data['userpassword'])
+      const wrongEmailId=JSON.parse(usersList).some(each=>
+        each['useremail']!==data['useremail'] && each['userpassword']===data['userpassword'])
+      if(wrongPassword===true && wrongEmailId===false){
+        Alert.alert("WRONG PASSWORD","Enter correct password",[{
+          text:"Ok"
+        }])
+      }
+      if(wrongEmailId===true && wrongPassword==false){
+        Alert.alert("WRONG EMAIL","Enter correct email address",[{
+          text:"Ok"
+        }])
+      }
+      else if(wrongEmailId===false && wrongPassword===false){
+        Alert.alert("Create account","You don't have an account please create account",[
+          {
+            text:"CREATE",
+            onPress:()=>{
+              createAccount()
+            }
+          },
+          {
+            text:"CANCLE"
           }
-        },
-        {
-          text:"CANCLE"
-        }
-        
-      ])
+          
+        ])
+      }      
     }else{
       goToUserDetails()
     }
