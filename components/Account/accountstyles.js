@@ -1,0 +1,120 @@
+import { StyleSheet } from "react-native";
+
+const Styles=StyleSheet.create({
+    innerContainer:{
+        display:"flex",
+       justifyContent:"space-around",
+       alignItems:"center",
+    
+      },
+      imageContainer:{
+        borderWidth:1,
+        borderStyle:"solid",
+        borderColor:"blue",
+        width:"48%",
+        height:"48%"
+      },
+    accountFormContainer:{
+        height:"48%"
+    },
+    accountHeading:{
+        color:"black",
+        fontSize:23,
+        fontWeight:"bold",
+        marginBottom:10,
+        fontFamily:"Roboto"
+    },
+    accountcommonProp:{
+        fontSize:15,
+       fontWeight:"bold",
+     },
+     signin:{
+       color:"green",
+     },
+     alreadyAccount:{
+       color:"gray",
+     },
+     formContainer:{
+        width:"100%",
+        height:"70%",
+        display:"flex",
+        flexDirection:"column",
+        alignItems:"flex-start",
+       
+     },
+     namesContainer:{
+        display:"flex",
+        flexDirection:"row",
+        justifyContent:"space-between",
+        alignItems:"center",
+        width:"100%",
+        height:80,
+        marginBottom:20, 
+     },
+     firstNameContainer:{
+        width:"48%", 
+        height:40,
+     },
+     accountCommonInput:{
+        backgroundColor:"transparent",
+        borderWidth:1,
+        borderStyle:"solid",
+        borderColor:"gray",
+        borderRadius:5,
+        textDecorationLine:"none",
+     },
+     nameInput:{
+        width:"100%",
+     },
+     accountEmail:{
+        minWidth:"100%",
+     },
+     passwordInput:{
+        minWidth:"90%",
+        backgroundColor:"transparent",
+       
+       
+     },
+     passwordContainer:{
+        width:"100%",
+        display:"flex",
+        flexDirection:"row",
+        justifyContent:"space-between",
+        alignItems:"center",
+        marginTop:20,
+        
+     },
+     passwordAndEyeContainer:{
+        display:"flex",
+        flexDirection:"row",
+        justifyContent:"space-between",
+        alignItems:"center",
+        borderWidth:1,borderColor:"gray",borderStyle:"solid",
+        borderRadius:8,
+        paddingRight:20,
+        minWidth:"100%"
+    },
+     createAccountBtn:{
+        backgroundColor:'black',
+        width:'100%',
+        borderRadius:5,
+        padding:10,
+        marginTop:20
+      },
+      createAccountBtnText:{
+        color:"white",
+        margin:"auto",
+        fontWeight:"bold",
+        fontFamily:"Roboto",
+        fontSize:18
+      },
+      errMsg:{
+        color:"red",
+        fontSize:8,
+        fontFamily:"Roboto",
+        marginBottom:10
+      },
+      
+})
+
+export default Styles;
