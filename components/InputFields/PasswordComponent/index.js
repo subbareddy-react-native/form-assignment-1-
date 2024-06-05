@@ -4,18 +4,20 @@ import { TextInput } from "react-native-paper"
 import {Entypo} from 'react-native-vector-icons';
 import Styles from "../../Account/accountstyles"
 import {useState} from "react"
+import { useMediaQuery } from "../../Hooks/useMediaQuery";
 
 
 const PasswordComponent=(props)=>{
     const {newAccount,updatePassword}=props
     const {control}=useForm()
     const [showPassword,setShowPassword]=useState(false)
+    const {width}=useMediaQuery()
     
     const showAndHiddePassword=()=>{
         setShowPassword((prev)=>!prev)
     }
     return(
-        <View style={Styles.passwordContainer}>
+        <View style={[Styles.passwordContainer,{width:(width>769?"48%":"100%")}]}>
             <Controller
                 name={"accountPassword"}
                 control={control}

@@ -2,12 +2,14 @@ import { TextInput} from "react-native-paper"
 import {View,Text} from "react-native"
 import {useForm,Controller} from "react-hook-form"
 import Styles from "../../Account/accountstyles"
+import { useMediaQuery } from "../../Hooks/useMediaQuery"
 
 const LastNameComponent =(props)=>{
     const {newAccount,updateLastName}=props
     const {control}=useForm()
+    const {width}=useMediaQuery()
     return (
-        <View style={Styles.firstNameContainer}>
+        <View style={[Styles.firstNameContainer,{width:(width>769)?"48%":"100%"}]}>
             <Controller
                 control={control}
                 name="lastName"

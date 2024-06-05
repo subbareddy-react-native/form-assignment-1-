@@ -1,9 +1,12 @@
 import {Text, View,StyleSheet,Modal,Button,
-    useWindowDimensions,ScrollView, Alert,KeyboardAvoidingView,Keyboard,TouchableWithoutFeedback} from "react-native"
+ScrollView, Alert,KeyboardAvoidingView,Keyboard,TouchableWithoutFeedback,Platform,Switch,
+    TouchableOpacity} from "react-native"
 import * as React from "react"
 import { SearchBar } from "react-native-elements"
-import { DataTable} from "react-native-paper"
-import {useState,useEffect} from "react"
+import { AntDesign } from '@expo/vector-icons';
+import { FontAwesome6 } from '@expo/vector-icons';
+import { DataTable,Checkbox} from "react-native-paper"
+import {useState,useEffect,useContext} from "react"
 import TableRow from "../TableRow"
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -19,11 +22,59 @@ import AddressComponent from "../InputFields/AddressComponent"
 import PincodeComponent from "../InputFields/PincodeComponent"
 import CompanyNameComponent from "../InputFields/CompanyNameComponent"
 import RoleComponent from "../InputFields/RoleComponent"
+import {useKeyboard} from "../Hooks/useKeyboard"
+import {useMediaQuery} from "../Hooks/useMediaQuery"
+import useCustomContext from "../Hooks/useCustomContext"
+
 
 const UserDetails=({navigation})=>{
+    const Context=useContext(useCustomContext)
+    const {cond,updateDotCond,updateDeleteIconCond,deleteIconClicked,deleteSelectedAccount}=Context //this object is extract from the app.js (context created)
+    const {isKeyboardVisible}=useKeyboard()
     const [searchedValue,updateSearchInput]=useState("")
     const [showTable,updateShowTable]=useState(true)
     const [allUsers,updateAllusers]=useState([])
+    const [userDetailsPopup,setUserDetailsPopup]=useState(false)
+    const {isLg,isXl,isMd,width,height}=useMediaQuery()
+    const [editUSer,updateEditUser]=useState({})
+    const [editPopup,setEditPopup]=useState(false)
+    const [allCheckBoxs,SetAllCheckboxs]=useState(false)
+
+    const selectedUserFun=(id)=>{
+        const editUserDetails=allUsers.find(each=>each.id===id)
+        updateEditUser({...editUserDetails})
+        setUserDetailsPopup(true)
+    }
+
+    const selectedCheckBoxUser=(id)=>{
+        const selectedCheckBoxUserList=allUsers.map(each=>{
+            if(each.id===id){
+                return {...each,checkbox:!each.checkbox}
+            }else{
+                return each
+            }
+        })
+        const atleastOneSelected=selectedCheckBoxUserList.some(each=>each.checkbox===true)
+        const AllCheckBoxexChecked=selectedCheckBoxUserList.every(each=>each.checkbox)
+        if(AllCheckBoxexChecked){
+            SetAllCheckboxs(true)
+        }else{
+            SetAllCheckboxs(false)
+        }
+        if(atleastOneSelected){
+            updateDeleteIconCond(true)
+        }else{
+            updateDeleteIconCond(false)
+        }
+
+        updateAllusers(selectedCheckBoxUserList)
+    }
+
+
+    const hideUserDetailsPopup=()=>{
+        setUserDetailsPopup(prevState=>!prevState)
+    }
+
 
     const fetchDataFromStorage=async()=>{
         try{
@@ -45,9 +96,12 @@ const UserDetails=({navigation})=>{
         })
         .catch(error=>console.log(`error happend in userdetails while fetching the data from storage:${error.message}`))
     },[])
-    const [editUSer,updateEditUser]=useState({})
-    const [editPopup,setEditPopup]=useState(false)
-    const {width,height}=useWindowDimensions()
+
+
+    const hidePopUp=()=>{
+        setEditPopup(false)
+        setUserDetailsPopup(false) // this for userdetails pop up false condition
+    }
 
     //searching Functionality
     const checkNameIncludesOrNot=(each,text)=>{
@@ -61,10 +115,6 @@ const UserDetails=({navigation})=>{
 
     }
     //
-
-    const hidePopUp=()=>{
-        setEditPopup(!editPopup)
-    }
 
     const saveChanges=async()=>{
         const newUserDetails={
@@ -90,82 +140,186 @@ const UserDetails=({navigation})=>{
                 return eachUser
             }
         })
+
         updateAllusers(newUpdateUserDetails)
         await AsyncStorage.setItem("usersList",JSON.stringify(newUpdateUserDetails))
         hidePopUp()
     }
 
-    const deleteAccount=async(id)=>{
-        const filteredUsers=allUsers.filter(each=>each.id!==id)
+    const deleteAccount=async()=>{
+        const filteredUsers=allUsers.filter(each=>each.checkbox!==true)
         updateAllusers([...filteredUsers])
         await AsyncStorage.setItem("usersList",JSON.stringify(filteredUsers))
     }
 
+    if(deleteIconClicked){
+        Alert.alert("Are You Sure","are you sure for delete this  account",[
+            {
+                text:"YES",
+                onPress:()=>{
+                    deleteSelectedAccount()
+                    deleteAccount()
+                }
+            },
+            {
+                text:"NO",
+                onPress:()=>{
+                    deleteSelectedAccount()
+                }
+            }
+        ])
+        
+    }
+    
+
+
     // function for click on user for edit 
-    const editUserDetails=(id)=>{
-        const editUserDetails=allUsers.find(each=>each.id===id)
-        updateEditUser({...editUserDetails})
+    const editUserDetails=()=>{
         setEditPopup(!editPopup)
+        setUserDetailsPopup(false)
     }
 
     const editableForm=()=>{
         return (
         <>
-            <View style={Styles.namesContainer}>
+            <View style={[Styles.namesContainer,{flexDirection:(isLg || isXl)?"row":"column",height:(isXl || isLg)?80:130,justifyContent:(isLg || isXl)?"space-between":"space-around"}]}>
                 <FirstNameComponent newAccount={editUSer} updateFirstName={updateEditUser}/>
                 <LastNameComponent newAccount={editUSer} updateLastName={updateEditUser}/>
             </View>
-            <View style={Styles.namesContainer}>
+            <View style={[Styles.namesContainer,{flexDirection:(isLg || isXl)?"row":"column",height:(isXl || isLg)?80:130,justifyContent:(isLg || isXl)?"space-between":"space-around"}]}>
                 <PhoneNumberComponent editUser={editUSer} updatePhoneNumber={updateEditUser}/>
                 <CountryComponent editUSer={editUSer} updateCountry={updateEditUser}/>
             </View>
-            <View style={Styles.namesContainer}>
+            <View style={[Styles.namesContainer,,{flexDirection:(isLg || isXl)?"row":"column",height:(isXl || isLg)?80:130,justifyContent:(isLg || isXl)?"space-between":"space-around"}]}>
                 <StateComponent editUSer={editUSer} updateState={updateEditUser}/>
                 <CityComponent editUSer={editUSer} updateCity={updateEditUser} />
             </View>
-            <View style={Styles.namesContainer}>
+            <View style={[Styles.namesContainer,,{flexDirection:(isLg || isXl)?"row":"column",height:(isXl || isLg)?80:130,justifyContent:(isLg || isXl)?"space-between":"space-around"}]}>
                 <AddressComponent editUSer={editUSer} updateAddress={updateEditUser}/>
                 <PincodeComponent editUSer={editUSer} updatePincode={updateEditUser}/>
             </View>  
-            <View style={Styles.namesContainer}>
+            <View style={[Styles.namesContainer,,{flexDirection:(isLg || isXl)?"row":"column",height:(isXl || isLg)?80:130,justifyContent:(isLg || isXl)?"space-between":"space-around"}]}>
                 <CompanyNameComponent editUSer={editUSer} updateCompany={updateEditUser}/>
                 <RoleComponent editUSer={editUSer} updateRole={updateEditUser}/>
             </View>
-            <EmailComponent newAccount={editUSer} updateEmailText={updateEditUser}/>
-            <PasswordComponent newAccount={editUSer}  updatePassword={updateEditUser}/>
-            
+            <View style={[Styles.namesContainer,,{flexDirection:(isLg || isXl)?"row":"column",height:(isXl || isLg)?80:130,justifyContent:(isLg || isXl)?"space-between":"space-around"}]}>
+                <EmailComponent newAccount={editUSer} updateEmailText={updateEditUser}/>
+                <PasswordComponent newAccount={editUSer}  updatePassword={updateEditUser}/>
+            </View>
         </>
        )
 
     }
 
+
+    // this popup belongs to userform fields
     const showPopup=()=>{
         return (
-            <KeyboardAvoidingView behavior="hieght" style={{flex:1}}>
-                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                    <SafeAreaView>
-                        <Modal visible={true} transparent={true} >
-                            <View style={[Styles.popup,{height:height-((height/100)*50),width:width<768?width-((width/100)*5):width-((width/100)*40)}]}>
+        <KeyboardAvoidingView behavior="hieght" style={{flex:1}}>
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <SafeAreaView>
+                    <Modal visible={true} transparent={true} animationType="fade">
+                        <TouchableOpacity style={{height:"100%",width:"100%"}} activeOpacity={1} onPress={ hidePopUp} >
+                            <View style={[Styles.popup,{marginBottom:(isKeyboardVisible)?(isLg)?"41%":"45%":"auto"},{height:(isLg||isXl)?500:"55%",width:(isLg||isXl)?800:(isMd)?"60%":"90%"}]} onStartShouldSetResponder={() => true}
+                                        onPress={(event)=>{
+                                        event.stopPropagation()}} >
                                 <View style={{margin:"auto"}}>
                                     <ScrollView scrollEnabled nestedScrollEnabled bounces={false}>
-                                        <View  style={{marginBottom:20}}>
+                                        <View>
                                             {editableForm()}
                                         </View>
                                         <View style={Styles.saveAndCancelBtnsContainer}>
-                                            <Button title="SAVE" onPress={saveChanges}/>
+                                            <Button title="SAVE" onPress={saveChanges} />
                                             <Button title="CANCEL" onPress={hidePopUp}/>
                                         </View>
                                     </ScrollView>
                                 </View>
                             </View>
-                        </Modal>
-                    </SafeAreaView>
-                </TouchableWithoutFeedback>
-            </KeyboardAvoidingView>
+                        </TouchableOpacity>
+                    </Modal> 
+                </SafeAreaView>
+            </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
+               
         )
     }
 
+    //this popup belongs to userDetails popup
+    const paticularUserDetailsPopup=()=>{
+        return(
+            <Modal visible={true} transparent={true} animationType="fade">
+            <TouchableOpacity style={{height:"100%",width:"100%"}} activeOpacity={1} onPress={ hideUserDetailsPopup} >
+                <View style={[Styles.popup,{width:(isLg || isXl)?800:(isMd)?"75%":"90%",height:(isLg||isXl)?500:"55%"},{marginBottom:isKeyboardVisible?"5%":"auto"}]} 
+                    onStartShouldSetResponder={() => true}
+                    onPress={(event)=>{
+                    event.stopPropagation()}}>
+                    {/* inner container */}
+                    <View style={{height:"100%",width:"100%",margin:"auto"}}>
+                        {/* header container */}
+                        <View style={{marginBottom:5,height:"10%",width:"100%"}}>
+                        {/* edit and cancle buttons container */}
+                            <View style={{height:"100%",width:100,marginLeft:"auto",display:"flex",flexDirection:"row",alignItems:"center",justifyContent:"space-around"}}>
+                                <AntDesign name="edit" size={24} color="black" onPress={editUserDetails}/> 
+                                <FontAwesome6 name="xmark" size={24} color="black" onPress={hideUserDetailsPopup}/>
+                            </View>
+                        </View>
+                        {/* user info container */}
+                        <View style={{height:"90%"}}>
+                            {/* userHeading container */}
+                            <View style={{marginBottom:10}}>
+                                <Text style={{fontFamily:"Roboto",fontSize:20,fontWeight:"bold"}}>User Details</Text>
+                            </View>
+                            {/*fields container */}
+                            <View style={{height:"70%",display:"flex",flexDirection:"row"}}>
+                                {/* fields container */}
+                                <View style={{width:"100%"}}>
+                                    <ScrollView>
+                                        <View style={{width:"100%",height:"100%",display:"flex",flexDirection:isLg?"row":"column",flexWrap:"wrap",justifyContent:"center"}}>
+                                            <Text style={[Styles.eachFieldInUserDetails,{width:isLg?"48%":"100%"}]}><Text style={{color:isLg?"gray":"#17026b"}}>Name:   </Text>{editUSer.firstName+" "+editUSer.lastName}</Text>
+                                            <Text style={[Styles.eachFieldInUserDetails,{width:isLg?"48%":"100%"}]}><Text style={{color:isLg?"gray":"#17026b"}}>DOB:   </Text>10/06/2000</Text>
+                                            <Text style={[Styles.eachFieldInUserDetails,{width:isLg?"48%":"100%"}]}><Text style={{color:isLg?"gray":"#17026b"}}>Address:   </Text>{editUSer.address!==undefined?editUSer.address:"None"}</Text>
+                                            <Text style={[Styles.eachFieldInUserDetails,{width:isLg?"48%":"100%"}]}><Text style={{color:isLg?"gray":"#17026b"}}>City:   </Text>{editUSer.city!==undefined?editUSer.city:"None"}</Text>
+                                            <Text style={[Styles.eachFieldInUserDetails,{width:isLg?"48%":"100%"}]}><Text style={{color:isLg?"gray":"#17026b"}}>State:   </Text>{editUSer.state!==undefined?editUSer.state:"None"}</Text>
+                                            <Text style={[Styles.eachFieldInUserDetails,{width:isLg?"48%":"100%"}]}><Text style={{color:isLg?"gray":"#17026b"}}>Country:   </Text>{editUSer.country!==undefined?editUSer.country:"None"}</Text>
+                                            <Text style={[Styles.eachFieldInUserDetails,{width:isLg?"48%":"100%"}]}><Text style={{color:isLg?"gray":"#17026b"}}>Pincode:   </Text>{editUSer.pincode!==undefined?editUSer.pincode:"None"}</Text>
+                                            <Text style={[Styles.eachFieldInUserDetails,{width:isLg?"48%":"100%"}]}><Text style={{color:isLg?"gray":"#17026b"}}>PhoneNumber:   </Text>{editUSer.phoneNumber!==undefined?editUSer.phoneNumber:"None"}</Text>
+                                            <Text style={[Styles.eachFieldInUserDetails,{width:isLg?"48%":"100%"}]}><Text style={{color:isLg?"gray":"#17026b"}}>CompanyName:   </Text>{editUSer.companyName!==undefined?editUSer.companyName:"None"}</Text>
+                                            <Text style={[Styles.eachFieldInUserDetails,{width:isLg?"48%":"100%"}]}><Text style={{color:isLg?"gray":"#17026b"}}>Role:   </Text>{editUSer.role!==undefined?editUSer.role:"None"}</Text>
+                                            <Text style={[Styles.eachFieldInUserDetails,{width:isLg?"48%":"100%"}]}><Text style={{color:isLg?"gray":"#17026b"}}>Email:    </Text>{editUSer.useremail!==undefined?editUSer.useremail:"None"}</Text>
+                                            <Text style={[Styles.eachFieldInUserDetails,{width:isLg?"48%":"100%"}]}><Text style={{color:isLg?"gray":"#17026b"}}>Password:   </Text>{editUSer.userpassword!==undefined?editUSer.userpassword:"None"}</Text>
+                                        </View>
+                                    </ScrollView>
+                                </View>
+                            </View>
+                            <View style={{marginTop:"3%"}}>
+                                <Text style={{fontFamily:"Roboto",fontWeight:"bold"}}><Text style={{color:isLg?"gray":"#17026b",fontSize:20}}>About:   </Text>asdghjskkbddnb sjand jasdadv ajs ajd jasbdkabdjaskbda kbdkajsbd</Text>
+                            </View>
+                        </View>
+                    </View>
+                </View>
+            </TouchableOpacity>
+            </Modal>
+        )
+    }
+
+    //userDetails popup with profile
+    const showUserDetailsPopup=()=>{
+        return (
+            <>
+                {userDetailsPopup?
+                // if  UserDetailsPopup is true then show edit form
+                    paticularUserDetailsPopup()
+                :
+                // if  UserDetailsPopup is fasle then show user details popup
+                    showPopup()
+                }
+            </>
+           
+       )
+    }
+
     const gotoSignIn=()=>{
+        updateDotCond(false)
         Alert.alert("LogOut","Are You Sure for logout ?",[
             {
                 text:"OK",
@@ -174,43 +328,121 @@ const UserDetails=({navigation})=>{
                 }
             },
             {
-                text:"CANCEL"
+                text:"CANCEL",
+                
+
             }
         ])
         
     }
 
-   return(<View style={{position:"relative",height:height}}>
+    const hideThreeDotsPopUp=()=>{
+        updateDotCond(false)
+    }
+
+    const showThreeDotsPopUp=()=>{
+        return(
+            <Modal visible={true} transparent={true} animationType="fade">
+                 <TouchableOpacity style={{position:"relative",height:"100%",width:"100%"}} activeOpacity={1} onPress={ hideThreeDotsPopUp} >
+                    <View style={[Styles.popup,{minWidth:150,minHeight:"10%",position:"absolute",top:(isLg || isXl)?"10%":(isMd)?"8%":"6%",left:(isLg || isXl)?"83%":(isMd)?"78%":"60%"}] }
+                        onStartShouldSetResponder={() => true}
+                        onPress={(event)=>{
+                        event.stopPropagation()}}
+                    >
+                       <Button title="Info"  color="#000" />
+                       <Button title="Logout" color="#000" onPress={gotoSignIn}/>
+                    </View>
+                 </TouchableOpacity>
+                
+            </Modal>
+        )
+    }
+
+    const clickedOnAllCheckBoxes=()=>{
+        const allCheckBoxesList=allUsers.map(each=>{
+            if(allCheckBoxs===false){
+                return  {...each,checkbox:true}
+            }else{
+                return  {...each,checkbox:false}
+            }
+        })
+        updateAllusers(allCheckBoxesList)
+        const AllCheckBoxexChecked=allCheckBoxesList.every(each=>each.checkbox)
+        if(AllCheckBoxexChecked){
+            SetAllCheckboxs(true)
+        }else{
+            SetAllCheckboxs(false)
+        }
+        const atleastOneSelected=allCheckBoxesList.some(each=>each.checkbox===true)
+       
+        if(atleastOneSelected){
+            updateDeleteIconCond(true)
+        }else{
+            updateDeleteIconCond(false)
+        }
+    }
+
+   return(<View style={{height:height}}>
         <View style={Styles.searchBarContainer}>
-            <SearchBar
-                lightTheme={true}
-                placeholder="Search"
-                value={searchedValue}
-                onChangeText={searchInputTextChange}
-            />
+            <View style={{width:"100%"}}>
+                <SearchBar
+                    clearIcon={true}
+                    style={Styles.searchBar}
+                    lightTheme={true}
+                    placeholder="Search"
+                    value={searchedValue}
+                    onChangeText={searchInputTextChange}
+                    containerStyle={{
+                        backgroundColor: 'transparent',
+                        borderBottomColor: 'transparent',
+                        borderTopColor: 'transparent',
+                        }}
+                        inputContainerStyle={{
+                        backgroundColor: 'white',
+                        borderRadius: 8,
+                        
+                        }}
+                />
+            </View>
         </View>
         {showTable ?
-        <View style={Styles.tableContainer}>
-            <DataTable>
-                <DataTable.Header>
-                    <DataTable.Title >First Name</DataTable.Title>
-                    <DataTable.Title>Last Name</DataTable.Title>
-                    <DataTable.Title> Email</DataTable.Title>
-                    <DataTable.Title> Edit</DataTable.Title>
-                    <DataTable.Title> Delete Account</DataTable.Title>
-                </DataTable.Header>
-                {
-                (allUsers.filter(each=>checkNameIncludesOrNot(each,searchedValue)).map(eachUser=><TableRow key={eachUser.id} userDetails={eachUser} editClick={editUserDetails} deleteAccount={deleteAccount}/>))
-                }
+        allUsers.length !==0 ?
+        (<View>
+            <DataTable style={{height:height}}>
+                <DataTable.Header >
+                    <DataTable.Title style={Styles.center}>
+                     { Platform.OS === 'ios' ? (<Switch
+                            trackColor={{false: '#767577', true: 'green'}}
+                            // thumbColor={allCheckBoxs ? '#f5dd4b' : '#f4f3f4'}
+                            ios_backgroundColor="#3e3e3e"
+                            onValueChange={clickedOnAllCheckBoxes}
+                            value={allCheckBoxs}
+                        />): 
+                        (<Checkbox
+                            value={true}
+                            status={allCheckBoxs?"checked":"unchecked"}  
+                            onPress={clickedOnAllCheckBoxes} 
+                        />)}
+                    </DataTable.Title>
+                    <DataTable.Title style={Styles.center}>First Name</DataTable.Title>
+                    <DataTable.Title style={Styles.center}>Last Name</DataTable.Title>
+                    <DataTable.Title style={Styles.center}> Email</DataTable.Title>
+                </DataTable.Header>   
+                    <ScrollView nestedScrollEnabled scrollEnabled>
+                        <View style={{height:height}}>
+                            {
+                            (allUsers.filter(each=>checkNameIncludesOrNot(each,searchedValue)).map(eachUser=><TableRow key={eachUser.id} userDetails={eachUser} selectedUserFun={selectedUserFun} selectedCheckBoxUser={selectedCheckBoxUser}/>))
+                            }
+                        </View>
+                    </ScrollView>
+                
             </DataTable>
-        </View>
+        </View>):(<Text style={Styles.noUserExit}>No user exist in the table</Text>)
         :
         <Text style={Styles.noUserExit}>Sorry.No user is exit with that name</Text>
         }
-        <View style={Styles.logoutBtn} onPress={gotoSignIn}>
-            <Button title="LogOut" color="#024359" onPress={gotoSignIn}/>
-        </View>
-        {editPopup && showPopup()}
+        {cond&& showThreeDotsPopUp()}
+        {(userDetailsPopup || editPopup) && showUserDetailsPopup()}
    </View>)
 }
 
@@ -218,7 +450,7 @@ const Styles=StyleSheet.create({
     popup:{
         margin:"auto",
         backgroundColor:"white",
-        padding:10,
+        padding:5,
         borderRadius:10,
         shadowColor: "#000",
         shadowOffset: {
@@ -230,14 +462,16 @@ const Styles=StyleSheet.create({
         elevation: 7,
        
     },
+    eachFieldInUserDetails:{
+        marginBottom:"3%", 
+        fontFamily:"Roboto",
+        fontWeight:"bold"
+
+    },
      namesContainer:{
         display:"flex",
-        flexDirection:"row",
-        justifyContent:"space-between",
-        alignItems:"center",
+        flexWrap:"wrap",
         width:"100%",
-        height:70,
-        marginBottom:20
      },
     noUserExit:{
         textAlign:"center",
@@ -247,28 +481,20 @@ const Styles=StyleSheet.create({
         margin:"auto"
     },
     searchBarContainer:{
-        borderRadius:10,
-        margin:5,width:"90%",
-        marginLeft:"auto",
-        marginRight:"auto"
-    },
-    tableContainer:{
-        borderStyle:"solid",
-        borderColor:"gray",
-        borderWidth:1,
-        borderRadius:10
-    },
-    logoutBtn:{
-        backgroundColor:"gray",
-        width:100,
-        position:"absolute",
-        top:"80%",left:"75%"
+        margin:8,
     },
     saveAndCancelBtnsContainer:{
         display:"flex",
         flexDirection:"row",
         justifyContent:"space-around",
-        alignItems:"center"
+        alignItems:"center",
+        marginTop:15
+    },
+    center:{
+        display:"flex",justifyContent:"center",alignItems:"center",
+        // borderStyle:"solid",
+        // borderWidth:1,
+        // borderColor:"green"
     }
 })
 export default UserDetails;

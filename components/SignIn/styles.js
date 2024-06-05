@@ -2,17 +2,28 @@ import { StyleSheet } from "react-native";
 const styles = StyleSheet.create({
     innerContainer:{
       display:"flex",
-     justifyContent:"space-around",
+    paddingTop:"5%",
+    justifyContent:"space-around",
      alignItems:"center",
+     backgroundColor:"#ffffff",
+     borderTopLeftRadius:30,
+     borderTopRightRadius:30,
+    },
+    iconsContainer:{
+      width:130,
+      display:'flex',
+      flexDirection:"row",
+      justifyContent:'space-around',
+      alignItems:'center'
     },
     imageContainer:{
       width:"48%",
-      height:"48%"
+      height:"55%"
     },
    
     signHeading:{
       color:"black",
-      fontSize:30,
+      fontSize:17,
       fontFamily:"Roboto",
       marginBottom:20,
     },
@@ -29,10 +40,9 @@ const styles = StyleSheet.create({
     },
     input: {
     backgroundColor:"transparent",
-    borderRadius:7,
     height: 50,
     marginLeft:0,
-    borderWidth: 1,
+    // borderWidth: 1,
   },
   errMsg:{
     color:"red",
@@ -43,9 +53,9 @@ const styles = StyleSheet.create({
   passwordContainer:{
   display:"flex",
   flexDirection:"row",
-  justifyContent:"space-between",
+  justifyContent:"space-around",
   alignItems:"center",
-  borderWidth:1,
+  borderBottomWidth:1,
   borderColor:"gray",
   borderStyle:"solid",
   borderRadius:8,

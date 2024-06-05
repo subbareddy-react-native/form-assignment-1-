@@ -2,20 +2,23 @@ import { StyleSheet } from "react-native";
 
 const Styles=StyleSheet.create({
     innerContainer:{
-        display:"flex",
-       justifyContent:"space-around",
-       alignItems:"center",
+      display:"flex",
+      paddingTop:"5%",
+      justifyContent:"space-around",
+      alignItems:"center",
+     borderTopLeftRadius:30,
+     borderTopRightRadius:30,
+     backgroundColor:"white",
     
       },
       imageContainer:{
-        borderWidth:1,
-        borderStyle:"solid",
-        borderColor:"blue",
         width:"48%",
-        height:"48%"
+        height:"55%"
       },
     accountFormContainer:{
-        height:"48%"
+        display:"flex",
+        flexDirection:"column",
+        justifyContent:'center',
     },
     accountHeading:{
         color:"black",
@@ -49,10 +52,9 @@ const Styles=StyleSheet.create({
         alignItems:"center",
         width:"100%",
         height:80,
-        marginBottom:20, 
+        marginBottom:10, 
      },
      firstNameContainer:{
-        width:"48%", 
         height:40,
      },
      accountCommonInput:{
@@ -76,12 +78,11 @@ const Styles=StyleSheet.create({
        
      },
      passwordContainer:{
-        width:"100%",
         display:"flex",
         flexDirection:"row",
         justifyContent:"space-between",
         alignItems:"center",
-        marginTop:20,
+        height:40
         
      },
      passwordAndEyeContainer:{
@@ -92,6 +93,7 @@ const Styles=StyleSheet.create({
         borderWidth:1,borderColor:"gray",borderStyle:"solid",
         borderRadius:8,
         paddingRight:20,
+        marginTop:20,
         minWidth:"100%"
     },
      createAccountBtn:{
@@ -99,7 +101,7 @@ const Styles=StyleSheet.create({
         width:'100%',
         borderRadius:5,
         padding:10,
-        marginTop:20
+        marginTop:10
       },
       createAccountBtnText:{
         color:"white",
