@@ -51,13 +51,15 @@ const Account = ({ navigation }) => {
   const createNewUser = async () => {
     try {
       if (((newAccount.firstName !== undefined) && (newAccount.lastName !== undefined) && (newAccount.useremail !== undefined) && (newAccount.userpassword !== undefined))) {
+        const date=new Date()
         const newUser = {
           id: uuidv4(),
           firstName: newAccount.firstName,
           lastName: newAccount.lastName,
           useremail: newAccount.useremail.toLowerCase(),
           userpassword: newAccount.userpassword.toLowerCase(),
-          checkbox: false
+          checkbox: false,
+          accCreateddate:`${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`
         }
 
         const usersList = await AsyncStorage.getItem("usersList");

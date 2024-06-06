@@ -5,10 +5,12 @@ import * as React from "react"
 import { SearchBar } from "react-native-elements"
 import { AntDesign } from '@expo/vector-icons';
 import { FontAwesome6 } from '@expo/vector-icons';
-import { DataTable,Checkbox} from "react-native-paper"
+// import { Checkbox} from "react-native-paper"
+import Checkbox from "expo-checkbox";
 import {useState,useEffect,useContext} from "react"
 import TableRow from "../TableRow"
 import { SafeAreaView } from "react-native-safe-area-context";
+import { FlashList } from "@shopify/flash-list";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import LastNameComponent from "../InputFields/LastNameComponent"
 import EmailComponent from "../InputFields/EmailComponent";
@@ -35,7 +37,7 @@ const UserDetails=({navigation})=>{
     const [showTable,updateShowTable]=useState(true)
     const [allUsers,updateAllusers]=useState([])
     const [userDetailsPopup,setUserDetailsPopup]=useState(false)
-    const {isLg,isXl,isMd,width,height}=useMediaQuery()
+    const {isSm,isLg,isXl,isMd,width,height}=useMediaQuery()
     const [editUSer,updateEditUser]=useState({})
     const [editPopup,setEditPopup]=useState(false)
     const [allCheckBoxs,SetAllCheckboxs]=useState(false)
@@ -133,11 +135,11 @@ const UserDetails=({navigation})=>{
             "userpassword":editUSer.userpassword
         }
         
-        const newUpdateUserDetails=allUsers.map((eachUser)=>{
-            if(eachUser.id===newUserDetails.id){
+        const newUpdateUserDetails=allUsers.map((item)=>{
+            if(item.id===newUserDetails.id){
                 return newUserDetails
             }else{
-                return eachUser
+                return item
             }
         })
 
@@ -153,7 +155,7 @@ const UserDetails=({navigation})=>{
     }
 
     if(deleteIconClicked){
-        Alert.alert("Are You Sure","are you sure for delete this  account",[
+        Alert.alert("Are You Sure","are you sure for delete the selected account",[
             {
                 text:"YES",
                 onPress:()=>{
@@ -405,41 +407,32 @@ const UserDetails=({navigation})=>{
                 />
             </View>
         </View>
+        {allUsers.filter(each=>checkNameIncludesOrNot(each,searchedValue)).length!==0 &&
+        <View style={{display:"flex",flexDirection:"row",alignItems:"center",marginBottom:10,marginLeft:10}}>
+            <Checkbox
+                value={allCheckBoxs}  
+                onValueChange={clickedOnAllCheckBoxes} 
+            />
+           <Text> Select users</Text>
+        </View>
+        }
+        
         {showTable ?
         allUsers.length !==0 ?
-        (<View>
-            <DataTable style={{height:height}}>
-                <DataTable.Header >
-                    <DataTable.Title style={Styles.center}>
-                     { Platform.OS === 'ios' ? (<Switch
-                            trackColor={{false: '#767577', true: 'green'}}
-                            // thumbColor={allCheckBoxs ? '#f5dd4b' : '#f4f3f4'}
-                            ios_backgroundColor="#3e3e3e"
-                            onValueChange={clickedOnAllCheckBoxes}
-                            value={allCheckBoxs}
-                        />): 
-                        (<Checkbox
-                            value={true}
-                            status={allCheckBoxs?"checked":"unchecked"}  
-                            onPress={clickedOnAllCheckBoxes} 
-                        />)}
-                    </DataTable.Title>
-                    <DataTable.Title style={Styles.center}>First Name</DataTable.Title>
-                    <DataTable.Title style={Styles.center}>Last Name</DataTable.Title>
-                    <DataTable.Title style={Styles.center}> Email</DataTable.Title>
-                </DataTable.Header>   
-                    <ScrollView nestedScrollEnabled scrollEnabled>
-                        <View style={{height:height}}>
-                            {
-                            (allUsers.filter(each=>checkNameIncludesOrNot(each,searchedValue)).map(eachUser=><TableRow key={eachUser.id} userDetails={eachUser} selectedUserFun={selectedUserFun} selectedCheckBoxUser={selectedCheckBoxUser}/>))
-                            }
-                        </View>
-                    </ScrollView>
-                
-            </DataTable>
-        </View>):(<Text style={Styles.noUserExit}>No user exist in the table</Text>)
+        (<View style={{width:"100%",height:"100%"}}>
+           <FlashList
+                numColumns={isSm?1:isMd?2:3}
+                data={allUsers.filter(each=>checkNameIncludesOrNot(each,searchedValue))}
+                renderItem={({ item }) =>(
+                    <TableRow key={item.id} userDetails={item} selectedUserFun={selectedUserFun} selectedCheckBoxUser={selectedCheckBoxUser}/>
+                )}
+                estimatedItemSize={200}
+            />
+
+
+        </View>):(<Text style={Styles.noUserExit}>No card  exist here</Text>)
         :
-        <Text style={Styles.noUserExit}>Sorry.No user is exit with that name</Text>
+        <Text style={Styles.noUserExit}>Sorry.No card is exit with that name</Text>
         }
         {cond&& showThreeDotsPopUp()}
         {(userDetailsPopup || editPopup) && showUserDetailsPopup()}
